@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Clima Tempo
 
-## Getting Started
+Aplicação web para consultar a previsão do tempo atual de uma cidade de forma simples, rápida e responsiva.
 
-First, run the development server:
+O projeto permite buscar uma cidade e visualizar a temperatura, a umidade, a velocidade do vento e a condição climática atual.
+
+> Este projeto continua em evolução. Novas funcionalidades e melhorias visuais serão adicionadas ao longo do desenvolvimento.
+
+## Visualização do projeto
+
+![Visualização do projeto](./public/preview.gif)
+
+## Tecnologias utilizadas
+
+- [Next.js](https://nextjs.org/) 16, com App Router
+- [React](https://react.dev/) 19
+- [TypeScript](https://www.typescriptlang.org/)
+- CSS puro para a estilização da interface
+- [Open-Meteo Geocoding API](https://open-meteo.com/en/docs/geocoding-api), para localizar a cidade
+- [Open-Meteo Forecast API](https://open-meteo.com/en/docs), para consultar os dados meteorológicos
+- Geist, carregada com `next/font`
+
+## Funcionalidades atuais
+
+- Busca de cidades
+- Consulta da condição climática atual
+- Exibição de temperatura, umidade e velocidade do vento
+- Interface responsiva para desktop e dispositivos móveis
+- Layout minimalista com foco na leitura das informações
+
+## Como executar o projeto
+
+### Pré-requisitos
+
+- Node.js instalado
+- npm instalado
+
+### Instalação
+
+```bash
+npm install
+```
+
+### Ambiente de desenvolvimento
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000) no navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Outros comandos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint   # verifica problemas de lint
+npm run build  # cria a versão de produção
+npm start      # inicia a aplicação em produção
+```
 
-## Learn More
+## Estrutura principal
 
-To learn more about Next.js, take a look at the following resources:
+```text
+app/
+├── components/
+│   ├── SearchCity.tsx
+│   └── WeatherCard.tsx
+├── types/
+│   └── weather.ts
+├── globals.css
+├── layout.tsx
+└── page.tsx
+public/
+└── preview.gif
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Próximos passos
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Algumas possibilidades para a evolução do projeto:
 
-## Deploy on Vercel
+- Tratamento de erros para cidades não encontradas
+- Indicador de carregamento durante a busca
+- Previsão para os próximos dias
+- Exibição da localização encontrada
+- Melhorias de acessibilidade e experiência do usuário
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Licença
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Este projeto é destinado a fins de estudo e desenvolvimento.
