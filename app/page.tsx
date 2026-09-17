@@ -9,9 +9,11 @@ export default function Home() {
 
   const [clima, setClima] = useState<WeatherData | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [carregando, setCarregando] = useState(false);
 
   async function buscarClima(cidade: string) {
     setErro(null);
+    setCarregando(true);
 
     try {
       const dadosClima = await buscarClimaOpenMeteo(cidade);
@@ -20,6 +22,8 @@ export default function Home() {
       if (error instanceof Error) {
         setErro(error.message);
       }
+    } finally {
+      setCarregando(false);
     }
   };
 
@@ -38,6 +42,7 @@ export default function Home() {
         </header>
 
         <SearchCity aoBuscar={buscarClima} />
+        {carregando && <p>Buscando clima...</p>}
         {erro && <p>{erro}</p>}
         {clima && <WeatherCard clima={clima} />}
       </div>
