@@ -1,9 +1,16 @@
-<!-- BEGIN:nextjs-agent-rules -->
+## Arquitetura
 
-# This is NOT the Next.js you know
+- `app/page.tsx` é responsável pela orquestração da interface, estado e renderização.
+- A comunicação com APIs externas deve ficar isolada em serviços dentro de `app/lib/`.
+- Componentes de UI não devem realizar chamadas diretamente a APIs externas.
+- Antes de implementar uma nova funcionalidade, analise a estrutura existente e preserve as responsabilidades de cada camada.
+- Evite refatorações ou alterações fora do escopo solicitado.
+- Priorize código simples e proporcional ao tamanho da aplicação.
+- Antes de alterar arquivos, explique brevemente o plano e quais arquivos serão modificados.
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+## Uso de IA
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
+- Não implemente mudanças apenas por conveniência sem verificar se elas são necessárias.
+- Ao sugerir uma refatoração, explique o problema que ela resolve e os trade-offs envolvidos.
+- Preserve o comportamento existente quando a tarefa for exclusivamente de refatoração.
+- Após implementar, informe quais arquivos foram alterados e quais validações foram realizadas.
