@@ -32,6 +32,7 @@ export default function WeatherCard({clima}: WeatherCardProps) {
         <div>
           <span className="weather-card-label">Agora</span>
           <h2 id="weather-card-title">Clima atual</h2>
+          <p>{clima.location.name}, {clima.location.admin1}</p>
         </div>
         <span className="weather-status" aria-hidden="true">●</span>
       </div>

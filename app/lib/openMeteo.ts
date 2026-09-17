@@ -12,8 +12,9 @@ export async function buscarClima(cidade: string): Promise<WeatherData> {
     throw new Error('Cidade não encontrada');
   }
 
-  const latitude = dados.results[0].latitude;
-  const longitude = dados.results[0].longitude;
+  const localizacao = dados.results[0];
+  const latitude = localizacao.latitude;
+  const longitude = localizacao.longitude;
 
   /* Usa latitude e longitude convertida a cima,
      para buscar o clima atual da cidade através da API open-meteo */
@@ -23,5 +24,14 @@ export async function buscarClima(cidade: string): Promise<WeatherData> {
 
   const dadosClima = await respostaClima.json();
 
-  return dadosClima;
+  return {
+    location: {
+      name: localizacao.name,
+      country: localizacao.country,
+      admin1: localizacao.admin1,
+      latitude,
+      longitude,
+    },
+    current: dadosClima.current,
+  };
 }

@@ -1,4 +1,11 @@
 export interface WeatherData {
+  location: {
+    name: string;
+    country: string;
+    admin1: string;
+    latitude: number;
+    longitude: number;
+  };
   current: {
     temperature_2m: number;
     relative_humidity_2m: number;
