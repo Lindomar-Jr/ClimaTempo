@@ -8,13 +8,18 @@ import { buscarClima as buscarClimaOpenMeteo } from './lib/openMeteo';
 export default function Home() {
 
   const [clima, setClima] = useState<WeatherData | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
 
   async function buscarClima(cidade: string) {
+    setErro(null);
+
     try {
       const dadosClima = await buscarClimaOpenMeteo(cidade);
       setClima(dadosClima);
     } catch (error) {
-      console.error(error);
+      if (error instanceof Error) {
+        setErro(error.message);
+      }
     }
   };
 
@@ -33,6 +38,7 @@ export default function Home() {
         </header>
 
         <SearchCity aoBuscar={buscarClima} />
+        {erro && <p>{erro}</p>}
         {clima && <WeatherCard clima={clima} />}
       </div>
       
