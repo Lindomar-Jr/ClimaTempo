@@ -23,7 +23,7 @@ export async function buscarClima(cidade: string): Promise<WeatherData> {
   /* Usa latitude e longitude convertida a cima,
      para buscar o clima atual da cidade através da API open-meteo */
   const respostaClima = await fetch(
-    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m`
+    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min`
   );
 
   if (!respostaClima.ok) {
@@ -41,5 +41,6 @@ export async function buscarClima(cidade: string): Promise<WeatherData> {
       longitude,
     },
     current: dadosClima.current,
+    daily: dadosClima.daily,
   };
 }
