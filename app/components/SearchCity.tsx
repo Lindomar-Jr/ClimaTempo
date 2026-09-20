@@ -23,20 +23,27 @@ export default function SearchCity({ aoBuscar }: SearchCityProps) {
 /* No componente SearchCity, quando o usuário digita no input,
    o onChange captura o valor e atualiza o estado cidade através de setCidade.*/
 
-/*Quando o botão é clicado, o evento onClick executa a função buscarCidade.
-  Essa função executa aoBuscar(cidade).
+/* Quando o botão é clicado, o evento onClick executa a função buscarCidade.
 
-  Como aoBuscar recebeu a referência da função buscarClima no componente Home,
-  executar aoBuscar(cidade) faz com que buscarClima seja executada,
-  recebendo como parâmetro o valor atual armazenado no estado cidade.*/
+   A função valida e remove espaços desnecessários da entrada.
+   Se houver uma cidade válida, executa aoBuscar(cidadeValida).
 
-    <div className="search-panel">
+   Como aoBuscar recebeu a referência da função buscarClima no componente Home,
+   executar aoBuscar(cidadeValida) faz com que buscarClima seja executada,
+   recebendo como parâmetro a cidade validada. */
+
+    <form className="search-panel" 
+      onSubmit={(event) => {
+        event.preventDefault();
+        buscarCidade();
+      }}>
+
       <input type="text"
       aria-label="Nome da cidade"
       onChange={(e) => setCidade(e.target.value)}
       placeholder="Digite uma cidade" />
 
-      <button type="button" onClick={buscarCidade}>Buscar</button>
-    </div>
+      <button type="submit">Buscar</button>
+    </form>
   );
 }

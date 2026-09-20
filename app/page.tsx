@@ -13,6 +13,7 @@ export default function Home() {
 
   async function buscarClima(cidade: string) {
     setErro(null);
+    setClima(null);
     setCarregando(true);
 
     try {

@@ -3,8 +3,12 @@ import { WeatherData } from '../types/weather';
 export async function buscarClima(cidade: string): Promise<WeatherData> {
   //transfroma a cidade em latitude e longitude através da API de geocoding
   const resposta = await fetch(
-    `https://geocoding-api.open-meteo.com/v1/search?name=${cidade}&count=1&language=pt`
+    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=1&language=pt`
   );
+
+  if (!resposta.ok) {
+    throw new Error('Erro ao buscar localização da cidade');
+  }
 
   const dados = await resposta.json();
 
@@ -21,6 +25,10 @@ export async function buscarClima(cidade: string): Promise<WeatherData> {
   const respostaClima = await fetch(
     `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m`
   );
+
+  if (!respostaClima.ok) {
+    throw new Error('Erro ao buscar clima');
+  }
 
   const dadosClima = await respostaClima.json();
 
