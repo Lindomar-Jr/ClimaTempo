@@ -3,6 +3,7 @@ import { useState } from 'react';
 import SearchCity from './components/SearchCity';
 import { WeatherData } from './types/weather';
 import WeatherCard from './components/WeatherCard';
+import StatusMessage from './components/StatusMessage';
 import { buscarClima as buscarClimaOpenMeteo } from './lib/openMeteo';
 
 export default function Home() {
@@ -43,8 +44,8 @@ export default function Home() {
         </header>
 
         <SearchCity aoBuscar={buscarClima} />
-        {carregando && <p>Buscando clima...</p>}
-        {erro && <p>{erro}</p>}
+        {carregando && <StatusMessage tipo="loading" mensagem="Buscando clima..." />}
+        {erro && <StatusMessage tipo="error" mensagem={erro} />}
         {clima && <WeatherCard clima={clima} />}
       </div>
       

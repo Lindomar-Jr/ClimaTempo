@@ -146,6 +146,36 @@ input {
 	transform: translateY(0);
 }
 
+.status-message {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	margin-top: 1rem;
+	padding: 0.9rem 1rem;
+	border: 1px solid var(--line);
+	border-radius: 0.85rem;
+	background: var(--white);
+	box-shadow: 0 0.75rem 1.5rem rgba(41, 87, 112, 0.1);
+	animation: reveal 300ms ease both;
+}
+
+.status-message--loading {
+	color: var(--accent-dark);
+}
+
+.status-message--error {
+	border-color: rgba(190, 58, 58, 0.25);
+	color: #a52d2d;
+}
+
+.status-message-icon {
+	flex: 0 0 auto;
+}
+
+.status-message-icon--loading {
+	animation: spin 900ms linear infinite;
+}
+
 .weather-card {
 	margin-top: 1.5rem;
 	padding: clamp(1.5rem, 5vw, 2.25rem);
@@ -232,6 +262,12 @@ input {
 	}
 }
 
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 @media (max-width: 420px) {
 	.weather-page {
 		padding-right: 1rem;
@@ -247,7 +283,9 @@ input {
 @media (prefers-reduced-motion: reduce) {
 	.weather-header,
 	.search-panel,
-	.weather-card {
+	.weather-card,
+	.status-message,
+	.status-message-icon--loading {
 		animation: none;
 	}
 
