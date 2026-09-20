@@ -10,10 +10,14 @@ export default function SearchCity({ aoBuscar }: SearchCityProps) {
     const [cidade, setCidade] = useState('');
 
     function buscarCidade() {
-        aoBuscar(cidade);
-    }
+        const cidadeValida = cidade.trim();
 
-    console.log(cidade);
+        if (!cidadeValida) {
+            return;
+        }
+
+        aoBuscar(cidadeValida);
+    }
 
   return (
 /* No componente SearchCity, quando o usuário digita no input,
