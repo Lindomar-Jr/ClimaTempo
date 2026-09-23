@@ -154,6 +154,71 @@ input {
 	transform: translateY(0);
 }
 
+.city-results {
+	margin-top: 1rem;
+	border: 1px solid rgba(255, 255, 255, 0.75);
+	border-radius: 1rem;
+	background: var(--white);
+	box-shadow: 0 1.25rem 2.75rem rgba(39, 90, 119, 0.12);
+	backdrop-filter: blur(14px);
+	animation: reveal 300ms ease both;
+}
+
+.city-results-list {
+	/* O CSS limita a área sem descartar resultados, que continuam no DOM e podem rolar. */
+	max-height: 12rem;
+	overflow-y: auto;
+	margin: 0;
+	padding: 0.45rem;
+	list-style: none;
+}
+
+.city-results-item + .city-results-item {
+	border-top: 1px solid var(--line);
+}
+
+.city-results-button {
+	display: flex;
+	width: 100%;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.25rem;
+	cursor: pointer;
+	border: 0;
+	border-radius: 0.72rem;
+	padding: 0.85rem 1rem;
+	color: var(--ink);
+	background: transparent;
+	text-align: left;
+	transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.city-results-button:hover {
+	background: rgba(234, 245, 251, 0.72);
+	box-shadow: 0 0.5rem 1rem rgba(39, 90, 119, 0.08);
+	transform: translateY(-1px);
+}
+
+.city-results-button:focus-visible {
+	outline: 3px solid rgba(22, 118, 168, 0.28);
+	outline-offset: 2px;
+}
+
+.city-results-button:active {
+	background: rgba(234, 245, 251, 0.9);
+	box-shadow: none;
+	transform: translateY(0);
+}
+
+.city-results-name {
+	font-weight: 700;
+}
+
+.city-results-location {
+	color: var(--muted);
+	font-size: 0.86rem;
+}
+
 .status-message {
 	display: flex;
 	align-items: center;
@@ -370,16 +435,22 @@ input {
 }
 
 @media (prefers-reduced-motion: reduce) {
+	/* Respeita a preferência do usuário e remove animações não essenciais. */
 	.weather-header,
 	.search-panel,
 	.weather-card,
 	.forecast-card,
 	.status-message,
+	.city-results,
 	.status-message-icon--loading {
 		animation: none;
 	}
 
 	.search-panel button {
+		transition: none;
+	}
+
+	.city-results-button {
 		transition: none;
 	}
 }

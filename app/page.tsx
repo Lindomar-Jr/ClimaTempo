@@ -2,25 +2,63 @@
 import { useState } from 'react';
 import SearchCity from './components/SearchCity';
 import { WeatherData } from './types/weather';
+import { CityResult } from './types/city';
 import WeatherCard from './components/WeatherCard';
 import ForecastCard from './components/ForecastCard';
 import StatusMessage from './components/StatusMessage';
-import { buscarClima as buscarClimaOpenMeteo } from './lib/openMeteo';
+import {
+  buscarCidades,
+  buscarClima as buscarClimaOpenMeteo,
+} from './lib/openMeteo';
+import CityResults from './components/CityResults';
 
 export default function Home() {
 
+   // Estados da interface: clima selecionado, resultados da busca,
+   // mensagem de erro e indicação de carregamento.
   const [clima, setClima] = useState<WeatherData | null>(null);
+  const [cidades, setCidades] = useState<CityResult[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
 
-  async function buscarClima(cidade: string) {
+  // Esta etapa apenas busca opções; a previsão só é solicitada após a escolha do usuário.
+  async function pesquisarCidades(cidade: string) {
     setErro(null);
     setClima(null);
+    setCidades([]);
     setCarregando(true);
 
     try {
-      const dadosClima = await buscarClimaOpenMeteo(cidade);
-      setClima(dadosClima);
+      const resultados = await buscarCidades(cidade);
+      setCidades(resultados);
+    } catch (error) {
+      if (error instanceof Error) {
+        setErro(error.message);
+      }
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+
+// A página orquestra a seleção da localização e a busca da previsão,
+// mantendo a comunicação com a API isolada no serviço.
+  async function selecionarCidade(cidade: CityResult) {
+    setCidades([]);
+    setErro(null);
+    setCarregando(true);
+
+    try {
+      const dadosClima = await buscarClimaOpenMeteo(
+        cidade.latitude,
+        cidade.longitude
+      );
+      // A composição mantém CityResult como location e WeatherForecast como previsão.
+      const dadosCompletos: WeatherData = {
+        location: cidade,
+        ...dadosClima,
+      };
+      setClima(dadosCompletos);
     } catch (error) {
       if (error instanceof Error) {
         setErro(error.message);
@@ -29,10 +67,6 @@ export default function Home() {
       setCarregando(false);
     }
   };
-
-  /* No componente Home, ao renderizar SearchCity,
-   passamos a função buscarClima através da prop aoBuscar.
-   Dessa forma, entregamos a referência da função criada no componente pai para o componente filho.*/
 
   return (
 
@@ -44,7 +78,16 @@ export default function Home() {
           <p>Consulte o clima da sua cidade:</p>
         </header>
 
-        <SearchCity aoBuscar={buscarClima} />
+        <SearchCity aoBuscar={pesquisarCidades} />
+
+        {cidades.length > 0 && (
+          <CityResults
+            cidades={cidades}
+            onSelecionarCidade={selecionarCidade}
+          />
+)}
+
+
         {carregando && <StatusMessage tipo="loading" mensagem="Buscando clima..." />}
         {erro && <StatusMessage tipo="error" mensagem={erro} />}
         {clima && <WeatherCard clima={clima} />}
