@@ -5,11 +5,13 @@ import { WeatherData } from './types/weather';
 import { CityResult } from './types/city';
 import WeatherCard from './components/WeatherCard';
 import ForecastCard from './components/ForecastCard';
+import HourlyForecastCard from './components/HourlyForecastCard';
 import StatusMessage from './components/StatusMessage';
 import {
   buscarCidades,
   buscarClima as buscarClimaOpenMeteo,
 } from './lib/openMeteo';
+import { transformarPrevisaoHoraria } from './lib/weatherTransform';
 import CityResults from './components/CityResults';
 
 export default function Home() {
@@ -20,6 +22,7 @@ export default function Home() {
   const [cidades, setCidades] = useState<CityResult[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
+  const [mostrarPrevisaoHoraria, setMostrarPrevisaoHoraria] = useState(false);
 
   // Esta etapa apenas busca opções; a previsão só é solicitada após a escolha do usuário.
   async function pesquisarCidades(cidade: string) {
@@ -53,10 +56,12 @@ export default function Home() {
         cidade.latitude,
         cidade.longitude
       );
-      // A composição mantém CityResult como location e WeatherForecast como previsão.
+      const previsaoHoraria = transformarPrevisaoHoraria(dadosClima.hourly);
       const dadosCompletos: WeatherData = {
         location: cidade,
-        ...dadosClima,
+        current: dadosClima.current,
+        daily: dadosClima.daily,
+        hourly: previsaoHoraria,
       };
       setClima(dadosCompletos);
     } catch (error) {
@@ -92,6 +97,21 @@ export default function Home() {
         {erro && <StatusMessage tipo="error" mensagem={erro} />}
         {clima && <WeatherCard clima={clima} />}
         {clima && <ForecastCard daily={clima.daily} />}
+        {clima && (
+          <>
+            <button
+              type="button"
+              onClick={() => setMostrarPrevisaoHoraria((visivel) => !visivel)}
+            >
+              {mostrarPrevisaoHoraria
+                ? 'Ocultar previsão por hora'
+                : 'Mostrar previsão por hora'}
+            </button>
+            {mostrarPrevisaoHoraria && (
+              <HourlyForecastCard hourly={clima.hourly} />
+            )}
+          </>
+        )}
       </div>
       
     </main>

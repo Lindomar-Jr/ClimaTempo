@@ -1,5 +1,5 @@
-import { WeatherForecast } from '../types/weather';
 import { CityResult } from '../types/city';
+import type { OpenMeteoForecastResponse } from '../types/weather';
 
 interface GeocodingResult {
   name: string;
@@ -75,19 +75,34 @@ export async function buscarCidades(cidade: string): Promise<CityResult[]> {
   return ordenarCidadesPorRelevancia(cidade, cidades);
 }
 
-export async function buscarClima(latitude: number, longitude: number): Promise<WeatherForecast> {
-  const respostaClima = await fetch(
-    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min`
-  );
+  export async function buscarClima(
+    latitude: number,
+    longitude: number
+  ): Promise<OpenMeteoForecastResponse> {
+    const parametros = new URLSearchParams({
+      latitude: latitude.toString(),
+      longitude: longitude.toString(),
+      current:
+        'temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m',
+      hourly: 'temperature_2m,weather_code,precipitation',
+      daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum',
+      timezone: 'auto',
+      forecast_days: '7',
+    });
 
-  if (!respostaClima.ok) {
-    throw new Error('Erro ao buscar clima');
-  }
+    const respostaClima = await fetch(
+      `https://api.open-meteo.com/v1/forecast?${parametros}`
+    );
 
-  const dadosClima = await respostaClima.json();
+    if (!respostaClima.ok) {
+      throw new Error('Erro ao buscar clima');
+    }
 
-  return {
-    current: dadosClima.current,
-    daily: dadosClima.daily,
+    const dadosClima = await respostaClima.json();
+
+    return {
+      current: dadosClima.current,
+      daily: dadosClima.daily,
+      hourly: dadosClima.hourly,
   };
 }
