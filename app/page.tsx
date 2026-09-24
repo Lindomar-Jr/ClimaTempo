@@ -100,6 +100,7 @@ export default function Home() {
         {clima && (
           <>
             <button
+              className="hourly-toggle-button"
               type="button"
               onClick={() => setMostrarPrevisaoHoraria((visivel) => !visivel)}
             >
