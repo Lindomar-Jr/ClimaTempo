@@ -32,6 +32,25 @@ input {
 	font: inherit;
 }
 
+.skip-link {
+	position: absolute;
+	top: 1rem;
+	left: 1rem;
+	z-index: 10;
+	transform: translateY(-200%);
+	border-radius: 0.6rem;
+	padding: 0.7rem 1rem;
+	color: #fff;
+	background: var(--accent-dark);
+	font-weight: 700;
+	text-decoration: none;
+	transition: transform 180ms ease;
+}
+
+.skip-link:focus-visible {
+	transform: translateY(0);
+}
+
 .weather-page {
 	position: relative;
 	display: flex;
@@ -212,11 +231,13 @@ input {
 
 .city-results-name {
 	font-weight: 700;
+	overflow-wrap: anywhere;
 }
 
 .city-results-location {
 	color: var(--muted);
 	font-size: 0.86rem;
+	overflow-wrap: anywhere;
 }
 
 .status-message {
@@ -284,6 +305,7 @@ input {
 	color: var(--muted);
 	font-size: 1rem;
 	font-weight: 600;
+	overflow-wrap: anywhere;
 }
 
 .weather-primary {
@@ -327,15 +349,24 @@ input {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 4.5rem;
-	height: 4.5rem;
+	width: 5rem;
+	height: 5rem;
 	border-radius: 50%;
 	background: rgba(255, 255, 255, 0.55);
 	box-shadow: 0 0.5rem 1rem rgba(39, 126, 184, 0.1);
 }
 
-.weather-condition-icon svg {
+.weather-icon-picture {
+	display: contents;
+}
+
+.weather-condition-icon img {
 	flex: 0 0 auto;
+	width: 64px;
+	height: 64px;
+	max-width: 64px;
+	max-height: 64px;
+	object-fit: contain;
 	filter: drop-shadow(0 0.4rem 0.5rem rgba(39, 126, 184, 0.18));
 }
 
@@ -463,11 +494,16 @@ input {
 }
 
 .forecast-icon {
-	box-sizing: content-box;
-	padding: 0.55rem;
+	display: block;
+	box-sizing: border-box;
+	width: 54px;
+	height: 54px;
+	max-width: 54px;
+	max-height: 54px;
+	padding: 0.2rem;
 	border-radius: 50%;
 	background: rgba(255, 255, 255, 0.68);
-	color: var(--accent);
+	object-fit: contain;
 }
 
 .forecast-temperature {
@@ -642,9 +678,16 @@ input {
 }
 
 .hourly-forecast-icon {
-	padding: 0.35rem;
+	display: block;
+	box-sizing: border-box;
+	width: 44px;
+	height: 44px;
+	max-width: 44px;
+	max-height: 44px;
+	padding: 0.2rem;
 	border-radius: 50%;
 	background: rgba(234, 245, 251, 0.62);
+	object-fit: contain;
 }
 
 .hourly-forecast-condition {

@@ -1,5 +1,6 @@
 import { getWeatherCondition } from '../lib/weatherConditions';
 import { WeatherData } from '../types/weather';
+import WeatherIcon from './WeatherIcon';
 
 interface ForecastCardProps {
   daily: WeatherData['daily'];
@@ -45,14 +46,21 @@ export default function ForecastCard({ daily }: ForecastCardProps) {
 
       <ul className="forecast-list">
         {daily.time.map((data, indice) => {
-          const { Icon, color } = getWeatherCondition(daily.weather_code[indice]);
+          const condition = getWeatherCondition(
+            daily.predominant_weather_code[indice] ?? daily.weather_code[indice]
+          );
 
           return (
             <li className="forecast-day" key={data}>
               <span className="forecast-date">
                 {formatarData(data)}
               </span>
-              <Icon className="forecast-icon" size={28} style={{ color }} aria-hidden="true" />
+              <WeatherIcon
+                animatedSrc={condition.icon}
+                staticSrc={condition.staticIcon}
+                className="forecast-icon"
+                size={54}
+              />
               <span className="forecast-temperature">
                 <strong>{daily.temperature_2m_max[indice]}°</strong>
                 <span>{daily.temperature_2m_min[indice]}°</span>

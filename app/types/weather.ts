@@ -6,15 +6,18 @@ export interface WeatherForecast {
     weather_code: number;
     wind_speed_10m: number;
   };
-  daily: {
+  daily: DailyWeatherData;
+  // Previsões individuais por hora, adaptadas ao modelo da aplicação.
+  hourly: HourlyWeather[];
+}
+
+export interface DailyWeatherData {
     time: string[];
     temperature_2m_max: number[];
     temperature_2m_min: number[];
     weather_code: number[];
     precipitation_sum: number[];
-  };
-  // Previsões individuais por hora, adaptadas ao modelo da aplicação.
-    hourly: HourlyWeather[];
+    predominant_weather_code: number[];
 }
 
 // extends compõe a previsão e acrescenta a localização escolhida pelo usuário.
@@ -49,12 +52,14 @@ export interface OpenMeteoForecastResponse {
     weather_code: number;
     wind_speed_10m: number;
   };
-  daily: {
+  daily: OpenMeteoDailyData;
+  hourly: OpenMeteoHourlyData;
+}
+
+export interface OpenMeteoDailyData {
     time: string[];
     temperature_2m_max: number[];
     temperature_2m_min: number[];
     weather_code: number[];
     precipitation_sum: number[];
-  };
-  hourly: OpenMeteoHourlyData;
 }

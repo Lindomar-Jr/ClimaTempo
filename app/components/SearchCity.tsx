@@ -38,10 +38,14 @@ export default function SearchCity({ aoBuscar }: SearchCityProps) {
         buscarCidade();
       }}>
 
-      <input type="text"
+      <input
+      id="city-search"
+      name="city"
+      type="search"
       aria-label="Nome da cidade"
+      autoComplete="off"
       onChange={(e) => setCidade(e.target.value)}
-      placeholder="Digite uma cidade" />
+      placeholder="Digite uma cidade…" />
 
       <button type="submit">Buscar</button>
     </form>

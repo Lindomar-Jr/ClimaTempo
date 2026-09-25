@@ -2,13 +2,14 @@
 import { Droplets, Wind } from 'lucide-react';
 import { getWeatherCondition } from '../lib/weatherConditions';
 import { WeatherData } from '../types/weather';
+import WeatherIcon from './WeatherIcon';
 
 interface WeatherCardProps {
   clima: WeatherData;
 }
 
 export default function WeatherCard({clima}: WeatherCardProps) {
-  const { description, Icon, color } = getWeatherCondition(clima.current.weather_code);
+  const condition = getWeatherCondition(clima.current.weather_code);
 
   return (
     <section className="weather-card" aria-labelledby="weather-card-title">
@@ -26,9 +27,14 @@ export default function WeatherCard({clima}: WeatherCardProps) {
         </div>
         <div className="weather-condition">
           <span className="weather-condition-icon">
-            <Icon size={64} style={{ color }} aria-hidden="true" />
+            <WeatherIcon
+              animatedSrc={condition.icon}
+              staticSrc={condition.staticIcon}
+              className="weather-current-icon"
+              size={64}
+            />
           </span>
-          <span className="weather-condition-description">{description}</span>
+          <span className="weather-condition-description">{condition.description}</span>
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { getWeatherCondition } from '../lib/weatherConditions';
 import { selecionarPrevisaoPorDia } from '../lib/weatherTransform';
 import type { HourlyWeather } from '../types/weather';
+import WeatherIcon from './WeatherIcon';
 
 interface HourlyForecastCardProps {
   hourly: HourlyWeather[];
@@ -85,7 +86,7 @@ export default function HourlyForecastCard({ hourly }: HourlyForecastCardProps) 
 
       <ul className="hourly-forecast-list">
         {previsaoDoDia.map((horario, indice) => {
-          const { description, Icon, color } = getWeatherCondition(horario.weatherCode);
+          const condition = getWeatherCondition(horario.weatherCode);
 
           return (
             <li
@@ -95,13 +96,13 @@ export default function HourlyForecastCard({ hourly }: HourlyForecastCardProps) 
               <time dateTime={horario.time} className="hourly-forecast-time">
                 {horario.time.slice(11, 16)}
               </time>
-              <Icon
+              <WeatherIcon
+                animatedSrc={condition.icon}
+                staticSrc={condition.staticIcon}
                 className="hourly-forecast-icon"
-                size={28}
-                style={{ color }}
-                aria-hidden="true"
+                size={44}
               />
-              <span className="hourly-forecast-condition">{description}</span>
+              <span className="hourly-forecast-condition">{condition.description}</span>
               <strong className="hourly-forecast-temperature">
                 {horario.temperature}°C
               </strong>
