@@ -104,5 +104,7 @@ export async function buscarCidades(cidade: string): Promise<CityResult[]> {
       current: dadosClima.current,
       daily: dadosClima.daily,
       hourly: dadosClima.hourly,
+      timezone: dadosClima.timezone,
+      utc_offset_seconds: dadosClima.utc_offset_seconds,
   };
 }

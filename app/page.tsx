@@ -14,6 +14,7 @@ import {
 import { buscarCidadePorCoordenadas } from './lib/bigDataCloud';
 import {
   calcularCondicoesPredominantes,
+  filtrarPrevisaoHorariaFutura,
   transformarPrevisaoHoraria,
 } from './lib/weatherTransform';
 import CityResults from './components/CityResults';
@@ -47,6 +48,8 @@ export default function Home() {
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [mostrarPrevisaoHoraria, setMostrarPrevisaoHoraria] = useState(false);
+  const [instanteAberturaPrevisao, setInstanteAberturaPrevisao] =
+    useState<Date | null>(null);
   const previsaoHorariaRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -101,8 +104,18 @@ export default function Home() {
         predominant_weather_code: codigosPredominantes,
       },
       hourly: previsaoHoraria,
+      timezone: dadosClima.timezone,
+      utc_offset_seconds: dadosClima.utc_offset_seconds,
     };
     setClima(dadosCompletos);
+  }
+
+  function alternarPrevisaoHoraria() {
+    if (!mostrarPrevisaoHoraria) {
+      setInstanteAberturaPrevisao(new Date());
+    }
+
+    setMostrarPrevisaoHoraria((visivel) => !visivel);
   }
 
   // A página orquestra a seleção da localização e a busca da previsão,
@@ -211,16 +224,22 @@ export default function Home() {
             <button
               className="hourly-toggle-button"
               type="button"
-              onClick={() => setMostrarPrevisaoHoraria((visivel) => !visivel)}
+              onClick={alternarPrevisaoHoraria}
             >
               {mostrarPrevisaoHoraria
                 ? 'Ocultar previsão por hora'
                 : 'Mostrar previsão por hora'}
             </button>
-            {mostrarPrevisaoHoraria && (
+            {mostrarPrevisaoHoraria && instanteAberturaPrevisao && (
               <HourlyForecastCard
-                hourly={clima.hourly}
+                hourly={filtrarPrevisaoHorariaFutura(
+                  clima.hourly,
+                  instanteAberturaPrevisao,
+                  clima.timezone
+                )}
                 sectionRef={previsaoHorariaRef}
+                timezone={clima.timezone}
+                instanteAtual={instanteAberturaPrevisao}
               />
             )}
           </>

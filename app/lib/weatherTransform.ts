@@ -22,6 +22,57 @@ export function transformarPrevisaoHoraria(
   }));
 }
 
+export function formatarDataHoraNoTimezone(
+  instante: Date,
+  timezone: string
+): string {
+  const partes = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    calendar: 'iso8601',
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).formatToParts(instante);
+  const valores = Object.fromEntries(
+    partes
+      .filter(({ type }) => type !== 'literal')
+      .map(({ type, value }) => [type, value])
+  );
+
+  return `${valores.year}-${valores.month}-${valores.day}T${valores.hour}:${valores.minute}`;
+}
+
+export function filtrarPrevisaoHorariaFutura(
+  previsao: HourlyWeather[],
+  instante: Date,
+  timezone: string
+): HourlyWeather[] {
+  const limite = `${formatarDataHoraNoTimezone(instante, timezone).slice(0, 13)}:00`;
+
+  return previsao.filter((horario) => horario.time >= limite);
+}
+
+export function obterDataAtualNoTimezone(
+  instante: Date,
+  timezone: string
+): string {
+  return formatarDataHoraNoTimezone(instante, timezone).slice(0, 10);
+}
+
+export function adicionarDiasNaData(data: string, quantidade: number): string {
+  const [ano, mes, dia] = data.split('-').map(Number);
+  const dataCalendario = new Date(Date.UTC(ano, mes - 1, dia + quantidade));
+
+  return [
+    dataCalendario.getUTCFullYear(),
+    String(dataCalendario.getUTCMonth() + 1).padStart(2, '0'),
+    String(dataCalendario.getUTCDate()).padStart(2, '0'),
+  ].join('-');
+}
+
 export function selecionarPrevisaoPorDia(
   previsao: HourlyWeather[],
   data: string

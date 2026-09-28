@@ -177,7 +177,7 @@ input {
 	display: block;
 	width: 100%;
 	cursor: pointer;
-	margin-top: 1.5rem;
+	margin-top: 0.5rem;
 	border: 1px solid rgba(22, 118, 168, 0.28);
 	border-radius: 6rem;
 	padding: 0.6rem 1.3rem;
@@ -497,6 +497,38 @@ input {
 	scroll-padding-inline: 0.35rem;
 }
 
+.forecast-list,
+.hourly-date-selector,
+.hourly-forecast-list {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(141, 184, 210, 0.62) transparent;
+}
+
+.forecast-list::-webkit-scrollbar,
+.hourly-date-selector::-webkit-scrollbar,
+.hourly-forecast-list::-webkit-scrollbar {
+	height: 6px;
+}
+
+.forecast-list::-webkit-scrollbar-track,
+.hourly-date-selector::-webkit-scrollbar-track,
+.hourly-forecast-list::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.forecast-list::-webkit-scrollbar-thumb,
+.hourly-date-selector::-webkit-scrollbar-thumb,
+.hourly-forecast-list::-webkit-scrollbar-thumb {
+	border-radius: 999px;
+	background: rgba(141, 184, 210, 0.62);
+}
+
+.forecast-list::-webkit-scrollbar-thumb:hover,
+.hourly-date-selector::-webkit-scrollbar-thumb:hover,
+.hourly-forecast-list::-webkit-scrollbar-thumb:hover {
+	background: rgba(22, 118, 168, 0.72);
+}
+
 .forecast-day {
 	display: grid;
 	justify-items: center;
@@ -625,7 +657,6 @@ input {
 	overflow-x: auto;
 	margin: 0 -0.15rem 1.1rem;
 	padding: 0.15rem 0.15rem 0.4rem;
-	scrollbar-width: thin;
 }
 
 .hourly-date-button {

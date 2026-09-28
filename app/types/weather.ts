@@ -10,6 +10,8 @@ export interface WeatherForecast {
   daily: DailyWeatherData;
   // Previsões individuais por hora, adaptadas ao modelo da aplicação.
   hourly: HourlyWeather[];
+  timezone: string;
+  utc_offset_seconds: number;
 }
 
 export interface DailyWeatherData {
@@ -56,6 +58,8 @@ export interface OpenMeteoForecastResponse {
   };
   daily: OpenMeteoDailyData;
   hourly: OpenMeteoHourlyData;
+  timezone: string;
+  utc_offset_seconds: number;
 }
 
 export interface OpenMeteoDailyData {
