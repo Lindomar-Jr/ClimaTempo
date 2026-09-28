@@ -94,7 +94,7 @@ input {
 }
 
 .weather-header {
-	margin-bottom: 2.25rem;
+	margin-bottom: 2.5rem;
 	text-align: center;
 	animation: reveal 600ms ease both;
 }
@@ -171,6 +171,37 @@ input {
 
 .search-panel button:active {
 	transform: translateY(0);
+}
+
+.location-button {
+	display: block;
+	width: 100%;
+	cursor: pointer;
+	margin-top: 0.2rem;
+	border: 1px solid rgba(22, 118, 168, 0.28);
+	border-radius: 6rem;
+	padding: 0.6rem 1.3rem;
+	color: var(--accent-dark);
+	background: rgba(255, 255, 255, 0.72);
+	font-weight: 700;
+	transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.location-button:hover:not(:disabled) {
+	border-color: var(--accent);
+	background: rgba(255, 255, 255, 0.94);
+	transform: translateY(-1px);
+}
+
+.location-button:focus-visible {
+	outline: 3px solid rgba(22, 118, 168, 0.28);
+	outline-offset: 2px;
+}
+
+.location-button:disabled,
+.search-panel button:disabled {
+	cursor: not-allowed;
+	opacity: 0.6;
 }
 
 .city-results {
@@ -352,7 +383,7 @@ input {
 	width: 5rem;
 	height: 5rem;
 	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.55);
+	background: rgba(141, 184, 210, 0.36);
 	box-shadow: 0 0.5rem 1rem rgba(39, 126, 184, 0.1);
 }
 
@@ -502,7 +533,7 @@ input {
 	max-height: 54px;
 	padding: 0.2rem;
 	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.68);
+	background: rgba(141, 184, 210, 0.36);
 	object-fit: contain;
 }
 
@@ -686,7 +717,7 @@ input {
 	max-height: 44px;
 	padding: 0.2rem;
 	border-radius: 50%;
-	background: rgba(234, 245, 251, 0.62);
+	background: rgba(141, 184, 210, 0.36);
 	object-fit: contain;
 }
 

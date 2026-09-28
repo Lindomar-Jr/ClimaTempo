@@ -11,6 +11,7 @@ import {
   buscarCidades,
   buscarClima as buscarClimaOpenMeteo,
 } from './lib/openMeteo';
+import { buscarCidadePorCoordenadas } from './lib/bigDataCloud';
 import {
   calcularCondicoesPredominantes,
   transformarPrevisaoHoraria,
@@ -30,6 +31,10 @@ export default function Home() {
 
     if (mensagem === 'Cidade não encontrada') {
       return `${mensagem}. Verifique o nome e tente novamente.`;
+    }
+
+    if (mensagem === 'Não foi possível identificar a cidade da sua localização.') {
+      return mensagem;
     }
 
     return `${mensagem}. Tente novamente em instantes.`;
@@ -61,40 +66,97 @@ export default function Home() {
   }
 
 
-// A página orquestra a seleção da localização e a busca da previsão,
-// mantendo a comunicação com a API isolada no serviço.
+  async function carregarClimaDaCidade(cidade: CityResult) {
+    const dadosClima = await buscarClimaOpenMeteo(
+      cidade.latitude,
+      cidade.longitude
+    );
+    const previsaoHoraria = transformarPrevisaoHoraria(dadosClima.hourly);
+    const codigosPredominantes = calcularCondicoesPredominantes(
+      previsaoHoraria,
+      dadosClima.daily.time,
+      dadosClima.daily.weather_code
+    );
+    const dadosCompletos: WeatherData = {
+      location: cidade,
+      current: dadosClima.current,
+      daily: {
+        ...dadosClima.daily,
+        predominant_weather_code: codigosPredominantes,
+      },
+      hourly: previsaoHoraria,
+    };
+    setClima(dadosCompletos);
+  }
+
+  // A página orquestra a seleção da localização e a busca da previsão,
+  // mantendo a comunicação com as APIs isolada nos serviços.
   async function selecionarCidade(cidade: CityResult) {
     setCidades([]);
     setErro(null);
     setCarregando(true);
 
     try {
-      const dadosClima = await buscarClimaOpenMeteo(
-        cidade.latitude,
-        cidade.longitude
-      );
-      const previsaoHoraria = transformarPrevisaoHoraria(dadosClima.hourly);
-      const codigosPredominantes = calcularCondicoesPredominantes(
-        previsaoHoraria,
-        dadosClima.daily.time,
-        dadosClima.daily.weather_code
-      );
-      const dadosCompletos: WeatherData = {
-        location: cidade,
-        current: dadosClima.current,
-        daily: {
-          ...dadosClima.daily,
-          predominant_weather_code: codigosPredominantes,
-        },
-        hourly: previsaoHoraria,
-      };
-      setClima(dadosCompletos);
+      await carregarClimaDaCidade(cidade);
     } catch (error) {
       setErro(formatarMensagemDeErro(error));
     } finally {
       setCarregando(false);
     }
-  };
+  }
+
+  async function usarLocalizacao() {
+    setErro(null);
+    setClima(null);
+    setCidades([]);
+    setCarregando(true);
+
+    try {
+      if (!navigator.geolocation) {
+        throw new Error(
+          'A localização não está disponível neste navegador. Tente novamente em outro navegador.'
+        );
+      }
+
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 0,
+          });
+        }
+      );
+
+      const cidade = await buscarCidadePorCoordenadas(
+        position.coords.latitude,
+        position.coords.longitude
+      );
+      await carregarClimaDaCidade(cidade);
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const codigo = (error as GeolocationPositionError).code;
+
+        if (codigo === 1) {
+          setErro(
+            'Permissão de localização negada. Habilite o acesso à localização nas configurações do navegador e tente novamente.'
+          );
+        } else if (codigo === 2) {
+          setErro(
+            'Não foi possível determinar sua localização no momento. Tente novamente.'
+          );
+        } else if (codigo === 3) {
+          setErro('A localização demorou mais que o esperado. Tente novamente.');
+        } else {
+          setErro(formatarMensagemDeErro(error));
+        }
+      } else {
+        setErro(formatarMensagemDeErro(error));
+      }
+    } finally {
+      setCarregando(false);
+    }
+  }
 
   return (
     <>
@@ -110,7 +172,11 @@ export default function Home() {
           <p>Consulte o clima da sua cidade:</p>
         </header>
 
-        <SearchCity aoBuscar={pesquisarCidades} />
+        <SearchCity
+          aoBuscar={pesquisarCidades}
+          aoUsarLocalizacao={usarLocalizacao}
+          carregando={carregando}
+        />
 
         {cidades.length > 0 && (
           <CityResults
