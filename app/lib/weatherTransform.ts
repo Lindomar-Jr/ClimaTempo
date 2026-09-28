@@ -14,6 +14,7 @@ interface CategoryStats extends CodeStats {
 export function transformarPrevisaoHoraria(
   dados: OpenMeteoHourlyData
 ): HourlyWeather[] {
+  // A API entrega séries paralelas; o mesmo índice reúne cada horário com seus valores.
   return dados.time.map((time, indice) => ({
     time,
     temperature: dados.temperature_2m[indice],
@@ -26,6 +27,8 @@ export function formatarDataHoraNoTimezone(
   instante: Date,
   timezone: string
 ): string {
+  // hourly.time é horário local sem offset; Intl converte o instante real para
+  // o timezone da cidade e produz a mesma chave comparável da API.
   const partes = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
     calendar: 'iso8601',
@@ -50,6 +53,8 @@ export function filtrarPrevisaoHorariaFutura(
   instante: Date,
   timezone: string
 ): HourlyWeather[] {
+  // Minutos e segundos são truncados para preservar o slot da hora atual; como
+  // as chaves YYYY-MM-DDTHH:mm estão normalizadas, a comparação textual é ordenável.
   const limite = `${formatarDataHoraNoTimezone(instante, timezone).slice(0, 13)}:00`;
 
   return previsao.filter((horario) => horario.time >= limite);
@@ -63,6 +68,8 @@ export function obterDataAtualNoTimezone(
 }
 
 export function adicionarDiasNaData(data: string, quantidade: number): string {
+  // UTC é usado apenas como calendário neutro; a data representa o calendário da cidade,
+  // não deve ser reinterpretada no timezone do navegador.
   const [ano, mes, dia] = data.split('-').map(Number);
   const dataCalendario = new Date(Date.UTC(ano, mes - 1, dia + quantidade));
 
@@ -85,6 +92,8 @@ export function calcularCondicoesPredominantes(
   datas: string[],
   codigosFallback: number[]
 ): number[] {
+  // A condição predominante é calculada por dia; empates preservam a primeira
+  // categoria observada para manter o resultado determinístico.
   const categoriasPorDia = new Map<
     string,
     Map<WeatherConditionCategory, CategoryStats>

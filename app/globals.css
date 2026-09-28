@@ -56,6 +56,7 @@ input {
 	display: flex;
 	min-height: 100vh;
 	justify-content: center;
+	/* Recorta as decorações sem criar um contêiner de rolagem interno para scrollIntoView. */
 	overflow: clip;
 	padding: clamp(3rem, 9vw, 7.5rem) 1.25rem 4rem;
 	background:
@@ -500,6 +501,7 @@ input {
 .forecast-list,
 .hourly-date-selector,
 .hourly-forecast-list {
+	/* Mantém os scrolls horizontais discretos e consistentes sem alterar seu comportamento. */
 	scrollbar-width: thin;
 	scrollbar-color: rgba(141, 184, 210, 0.62) transparent;
 }
@@ -633,6 +635,7 @@ input {
 	margin-top: 1.35rem;
 	border-top: 1px solid var(--line);
 	padding-top: 1.5rem;
+	/* Mantém respiro acima do título quando a seção é alcançada pelo scroll automático. */
 	scroll-margin-top: 1.5rem;
 	animation: reveal 400ms ease both;
 }

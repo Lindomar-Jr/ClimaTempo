@@ -22,6 +22,7 @@ function formatarNomeDoDia(
   timezone: string,
   instanteAtual: Date
 ) {
+  // Hoje e amanhã seguem o calendário da cidade consultada, não o timezone do navegador.
   const dataHoje = obterDataAtualNoTimezone(instanteAtual, timezone);
   const dataAmanha = adicionarDiasNaData(dataHoje, 1);
 
@@ -51,6 +52,7 @@ export default function HourlyForecastCard({
   timezone,
   instanteAtual,
 }: HourlyForecastCardProps) {
+  // A lista já chega filtrada no momento da abertura; o primeiro horário define o dia inicial.
   const [dataSelecionada, setDataSelecionada] = useState(
     hourly[0]?.time.slice(0, 10) ?? ''
   );

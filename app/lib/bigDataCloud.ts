@@ -29,10 +29,13 @@ export async function buscarCidadePorCoordenadas(
 
   const dados: BigDataCloudReverseGeocodingResponse = await resposta.json();
 
+  // city é mais específico que localityName; o fallback mantém o contrato mesmo
+  // quando a coordenada não corresponde a uma cidade identificável.
   return {
     name: dados.city ?? dados.localityName ?? 'Minha localização',
     country: dados.countryName ?? '',
     admin1: dados.principalSubdivision ?? '',
+    // As coordenadas originais são preservadas para o forecast usar a posição autorizada.
     latitude,
     longitude,
   };

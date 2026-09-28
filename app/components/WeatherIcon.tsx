@@ -23,6 +23,7 @@ export default function WeatherIcon({
 }: WeatherIconProps) {
   return (
     <picture className="weather-icon-picture">
+      {/* A fonte estática evita animações quando o usuário prefere movimento reduzido. */}
       <source
         media="(prefers-reduced-motion: reduce)"
         srcSet={getImageSource(staticSrc)}

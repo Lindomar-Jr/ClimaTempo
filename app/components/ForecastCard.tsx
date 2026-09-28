@@ -46,6 +46,8 @@ export default function ForecastCard({ daily }: ForecastCardProps) {
 
       <ul className="forecast-list">
         {daily.time.map((data, indice) => {
+          // O código predominante é derivado dos horários; o código diário da API
+          // mantém a exibição válida quando não há dados horários suficientes.
           const condition = getWeatherCondition(
             daily.predominant_weather_code[indice] ?? daily.weather_code[indice]
           );

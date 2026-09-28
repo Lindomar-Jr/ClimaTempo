@@ -52,6 +52,8 @@ export default function Home() {
     useState<Date | null>(null);
   const previsaoHorariaRef = useRef<HTMLElement | null>(null);
 
+  // A seção só entra no DOM quando aberta; o efeito aguarda essa renderização
+  // para rolar até ela sem interferir no comportamento de fechamento.
   useEffect(() => {
     if (!mostrarPrevisaoHoraria) {
       return;
@@ -85,6 +87,8 @@ export default function Home() {
   }
 
 
+  // Busca manual e localização atual convergem aqui para montar WeatherData
+  // e transformar a previsão exatamente com as mesmas regras.
   async function carregarClimaDaCidade(cidade: CityResult) {
     const dadosClima = await buscarClimaOpenMeteo(
       cidade.latitude,
@@ -104,12 +108,15 @@ export default function Home() {
         predominant_weather_code: codigosPredominantes,
       },
       hourly: previsaoHoraria,
+      // O timezone acompanha a previsão porque os horários da API não têm offset.
       timezone: dadosClima.timezone,
       utc_offset_seconds: dadosClima.utc_offset_seconds,
     };
     setClima(dadosCompletos);
   }
 
+  // O instante é capturado na abertura, e não na consulta do clima, para que
+  // a lista horária reflita o momento real em que o usuário pediu os detalhes.
   function alternarPrevisaoHoraria() {
     if (!mostrarPrevisaoHoraria) {
       setInstanteAberturaPrevisao(new Date());
@@ -134,6 +141,8 @@ export default function Home() {
     }
   }
 
+  // A localização precisa virar CityResult antes de reutilizar o fluxo de clima;
+  // assim, reverse geocoding e busca manual permanecem com o mesmo contrato.
   async function usarLocalizacao() {
     setErro(null);
     setClima(null);
@@ -149,6 +158,7 @@ export default function Home() {
 
       const position = await new Promise<GeolocationPosition>(
         (resolve, reject) => {
+          // A permissão é solicitada somente por ação explícita do usuário.
           navigator.geolocation.getCurrentPosition(resolve, reject, {
             enableHighAccuracy: false,
             timeout: 10000,
