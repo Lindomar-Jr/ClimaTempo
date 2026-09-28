@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type Ref } from 'react';
 import { getWeatherCondition } from '../lib/weatherConditions';
 import { selecionarPrevisaoPorDia } from '../lib/weatherTransform';
 import type { HourlyWeather } from '../types/weather';
@@ -8,6 +8,7 @@ import WeatherIcon from './WeatherIcon';
 
 interface HourlyForecastCardProps {
   hourly: HourlyWeather[];
+  sectionRef?: Ref<HTMLElement>;
 }
 
 function formatarDataISO(data: Date) {
@@ -44,7 +45,10 @@ function formatarDataNumerica(data: string) {
   return `${data.slice(8, 10)}/${data.slice(5, 7)}`;
 }
 
-export default function HourlyForecastCard({ hourly }: HourlyForecastCardProps) {
+export default function HourlyForecastCard({
+  hourly,
+  sectionRef,
+}: HourlyForecastCardProps) {
   const [dataSelecionada, setDataSelecionada] = useState(
     hourly[0]?.time.slice(0, 10) ?? ''
   );
@@ -62,7 +66,11 @@ export default function HourlyForecastCard({ hourly }: HourlyForecastCardProps) 
   }
 
   return (
-    <section className="hourly-forecast-card" aria-labelledby="hourly-forecast-card-title">
+    <section
+      ref={sectionRef}
+      className="hourly-forecast-card"
+      aria-labelledby="hourly-forecast-card-title"
+    >
       <header className="hourly-forecast-card-heading">
         <span className="forecast-card-label">Detalhes do dia</span>
         <h2 id="hourly-forecast-card-title">Previsão de hora em hora</h2>

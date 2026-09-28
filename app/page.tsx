@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import SearchCity from './components/SearchCity';
 import { WeatherData } from './types/weather';
 import { CityResult } from './types/city';
@@ -47,6 +47,22 @@ export default function Home() {
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [mostrarPrevisaoHoraria, setMostrarPrevisaoHoraria] = useState(false);
+  const previsaoHorariaRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!mostrarPrevisaoHoraria) {
+      return;
+    }
+
+    const movimentoReduzido = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    previsaoHorariaRef.current?.scrollIntoView({
+      behavior: movimentoReduzido ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  }, [mostrarPrevisaoHoraria]);
 
   // Esta etapa apenas busca opções; a previsão só é solicitada após a escolha do usuário.
   async function pesquisarCidades(cidade: string) {
@@ -202,7 +218,10 @@ export default function Home() {
                 : 'Mostrar previsão por hora'}
             </button>
             {mostrarPrevisaoHoraria && (
-              <HourlyForecastCard hourly={clima.hourly} />
+              <HourlyForecastCard
+                hourly={clima.hourly}
+                sectionRef={previsaoHorariaRef}
+              />
             )}
           </>
         )}

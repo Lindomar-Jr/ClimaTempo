@@ -5,6 +5,7 @@ export interface WeatherForecast {
     relative_humidity_2m: number;
     weather_code: number;
     wind_speed_10m: number;
+    pressure_msl: number;
   };
   daily: DailyWeatherData;
   // Previsões individuais por hora, adaptadas ao modelo da aplicação.
@@ -51,6 +52,7 @@ export interface OpenMeteoForecastResponse {
     relative_humidity_2m: number;
     weather_code: number;
     wind_speed_10m: number;
+    pressure_msl: number;
   };
   daily: OpenMeteoDailyData;
   hourly: OpenMeteoHourlyData;

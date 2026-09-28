@@ -83,7 +83,7 @@ export async function buscarCidades(cidade: string): Promise<CityResult[]> {
       latitude: latitude.toString(),
       longitude: longitude.toString(),
       current:
-        'temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m',
+        'temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,pressure_msl',
       hourly: 'temperature_2m,weather_code,precipitation',
       daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum',
       timezone: 'auto',
