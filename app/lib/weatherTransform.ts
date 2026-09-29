@@ -14,12 +14,70 @@ interface CategoryStats extends CodeStats {
 export function transformarPrevisaoHoraria(
   dados: OpenMeteoHourlyData
 ): HourlyWeather[] {
+  // A API entrega séries paralelas; o mesmo índice reúne cada horário com seus valores.
   return dados.time.map((time, indice) => ({
     time,
     temperature: dados.temperature_2m[indice],
     weatherCode: dados.weather_code[indice],
     precipitation: dados.precipitation[indice],
   }));
+}
+
+export function formatarDataHoraNoTimezone(
+  instante: Date,
+  timezone: string
+): string {
+  // hourly.time é horário local sem offset; Intl converte o instante real para
+  // o timezone da cidade e produz a mesma chave comparável da API.
+  const partes = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    calendar: 'iso8601',
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).formatToParts(instante);
+  const valores = Object.fromEntries(
+    partes
+      .filter(({ type }) => type !== 'literal')
+      .map(({ type, value }) => [type, value])
+  );
+
+  return `${valores.year}-${valores.month}-${valores.day}T${valores.hour}:${valores.minute}`;
+}
+
+export function filtrarPrevisaoHorariaFutura(
+  previsao: HourlyWeather[],
+  instante: Date,
+  timezone: string
+): HourlyWeather[] {
+  // Minutos e segundos são truncados para preservar o slot da hora atual; como
+  // as chaves YYYY-MM-DDTHH:mm estão normalizadas, a comparação textual é ordenável.
+  const limite = `${formatarDataHoraNoTimezone(instante, timezone).slice(0, 13)}:00`;
+
+  return previsao.filter((horario) => horario.time >= limite);
+}
+
+export function obterDataAtualNoTimezone(
+  instante: Date,
+  timezone: string
+): string {
+  return formatarDataHoraNoTimezone(instante, timezone).slice(0, 10);
+}
+
+export function adicionarDiasNaData(data: string, quantidade: number): string {
+  // UTC é usado apenas como calendário neutro; a data representa o calendário da cidade,
+  // não deve ser reinterpretada no timezone do navegador.
+  const [ano, mes, dia] = data.split('-').map(Number);
+  const dataCalendario = new Date(Date.UTC(ano, mes - 1, dia + quantidade));
+
+  return [
+    dataCalendario.getUTCFullYear(),
+    String(dataCalendario.getUTCMonth() + 1).padStart(2, '0'),
+    String(dataCalendario.getUTCDate()).padStart(2, '0'),
+  ].join('-');
 }
 
 export function selecionarPrevisaoPorDia(
@@ -34,6 +92,8 @@ export function calcularCondicoesPredominantes(
   datas: string[],
   codigosFallback: number[]
 ): number[] {
+  // A condição predominante é calculada por dia; empates preservam a primeira
+  // categoria observada para manter o resultado determinístico.
   const categoriasPorDia = new Map<
     string,
     Map<WeatherConditionCategory, CategoryStats>

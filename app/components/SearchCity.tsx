@@ -3,9 +3,15 @@ import { useState } from 'react';
 
 interface SearchCityProps {
     aoBuscar: (cidade: string) => void;
+  aoUsarLocalizacao: () => void;
+  carregando: boolean;
 }
 
-export default function SearchCity({ aoBuscar }: SearchCityProps) {
+export default function SearchCity({
+  aoBuscar,
+  aoUsarLocalizacao,
+  carregando,
+}: SearchCityProps) {
 
     const [cidade, setCidade] = useState('');
 
@@ -20,18 +26,7 @@ export default function SearchCity({ aoBuscar }: SearchCityProps) {
     }
 
   return (
-/* No componente SearchCity, quando o usuário digita no input,
-   o onChange captura o valor e atualiza o estado cidade através de setCidade.*/
-
-/* Quando o botão é clicado, o evento onClick executa a função buscarCidade.
-
-   A função valida e remove espaços desnecessários da entrada.
-   Se houver uma cidade válida, executa aoBuscar(cidadeValida).
-
-   Como aoBuscar recebeu a referência da função buscarClima no componente Home,
-   executar aoBuscar(cidadeValida) faz com que buscarClima seja executada,
-   recebendo como parâmetro a cidade validada. */
-
+    <>
     <form className="search-panel" 
       onSubmit={(event) => {
         event.preventDefault();
@@ -49,5 +44,15 @@ export default function SearchCity({ aoBuscar }: SearchCityProps) {
 
       <button type="submit">Buscar</button>
     </form>
+
+    <button
+      className="location-button"
+      type="button"
+      onClick={aoUsarLocalizacao}
+      disabled={carregando}
+    >
+      Usar minha localização
+    </button>
+    </>
   );
 }

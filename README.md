@@ -13,9 +13,14 @@ Além da integração com API, o projeto serve como prática de arquitetura, sep
 ## Funcionalidades
 
 - Busca de cidades por meio de formulário, incluindo envio pela tecla Enter.
-- Consulta do clima atual de uma cidade.
+- Consulta do clima atual de uma cidade ou da localização atual do usuário.
 - Exibição de temperatura, umidade, velocidade do vento e condição meteorológica.
+- Exibição da pressão atmosférica atual em hPa.
+- Exibição da precipitação diária prevista para hoje em mm.
 - Previsão para 7 dias, com temperaturas máxima e mínima.
+- Previsão horária iniciando no começo da hora atual, considerando o timezone da cidade consultada.
+- Seleção de dias na previsão horária e exibição dos horários futuros disponíveis.
+- Localização atual iniciada pelo usuário, com geocodificação reversa para identificar a cidade.
 - Ícones Lucide e cores semânticas para as condições meteorológicas.
 - Tratamento de cidade não encontrada e de erros das APIs.
 - Indicador de carregamento durante a busca.
@@ -24,6 +29,8 @@ Além da integração com API, o projeto serve como prática de arquitetura, sep
 - Interface responsiva para desktop e dispositivos móveis.
 - Recursos de acessibilidade, como rótulos, regiões de status e alertas.
 - Suporte à preferência de redução de movimento.
+- Scroll suave até a previsão horária ao abrir seus detalhes.
+- Scrollbars horizontais finas e customizadas para as previsões.
 - Identidade visual própria, incluindo metadata e favicon personalizados.
 
 ## Tecnologias utilizadas
@@ -35,55 +42,86 @@ Além da integração com API, o projeto serve como prática de arquitetura, sep
 - [Lucide React](https://lucide.dev/guide/packages/lucide-react), para os ícones.
 - [Open-Meteo Geocoding API](https://open-meteo.com/en/docs/geocoding-api).
 - [Open-Meteo Forecast API](https://open-meteo.com/en/docs).
+- Browser Geolocation API, para obter a localização atual após a ação e permissão do usuário.
+- BigDataCloud Free Client-Side Reverse Geocoding, para identificar a cidade a partir das coordenadas.
 - Geist, carregada com `next/font`.
 - Git e GitHub, para versionamento e integração do projeto.
 - Vercel, para publicação em produção.
 
 ## Arquitetura
 
-A aplicação utiliza o App Router do Next.js e mantém as responsabilidades separadas entre orquestração, componentes de interface e serviços:
+A aplicação utiliza o App Router do Next.js e mantém as responsabilidades separadas entre orquestração, componentes de interface, serviços externos, transformação de dados e tipos:
 
 ```text
 app/
 ├── components/
-│   ├── SearchCity.tsx
-│   ├── WeatherCard.tsx
+│   ├── CityResults.tsx
 │   ├── ForecastCard.tsx
-│   └── StatusMessage.tsx
+│   ├── HourlyForecastCard.tsx
+│   ├── SearchCity.tsx
+│   ├── StatusMessage.tsx
+│   ├── WeatherCard.tsx
+│   └── WeatherIcon.tsx
 ├── lib/
+│   ├── bigDataCloud.ts
 │   ├── openMeteo.ts
-│   └── weatherConditions.ts
+│   ├── weatherConditions.ts
+│   └── weatherTransform.ts
 ├── types/
+│   ├── city.ts
 │   └── weather.ts
+├── favicon.ico
 ├── globals.css
 ├── layout.tsx
 └── page.tsx
 ```
 
-- `page.tsx` coordena a interface, o estado e a renderização.
-- `components/` contém os componentes de interface.
-- `lib/` contém a comunicação com APIs externas e a lógica reutilizável.
-- `weatherConditions.ts` centraliza o mapeamento das condições meteorológicas.
-- `types/` contém os tipos TypeScript.
-- `globals.css` define os estilos globais.
-- `layout.tsx` define a estrutura global e os metadados.
+- `page.tsx` coordena a interface, o estado, a busca manual, a localização atual e a abertura da previsão horária.
+- `components/` contém os componentes de interface e apresentação dos resultados.
+- `openMeteo.ts` concentra a busca de cidades e a consulta do forecast da Open-Meteo.
+- `bigDataCloud.ts` concentra a geocodificação reversa da localização atual.
+- `weatherTransform.ts` contém transformações da previsão, seleção por dia, filtro de horários e cálculo de condições predominantes.
+- `types/` contém os contratos TypeScript de cidades, previsão, horários e timezone.
+- `globals.css` define a identidade visual, responsividade, acessibilidade visual e scrollbars horizontais.
+- `layout.tsx` define a estrutura global, fontes e metadados.
 
-As chamadas para APIs externas ficam isoladas em `app/lib/`.
+As chamadas para APIs externas ficam isoladas em `app/lib/`, enquanto os componentes permanecem responsáveis pela apresentação.
 
 ## Fluxo da aplicação
+
+### Busca manual
 
 ```text
 Usuário informa uma cidade
 	-> Open-Meteo Geocoding API
 	-> Latitude e longitude
 	-> Open-Meteo Forecast API
-	-> Dados meteorológicos
+	-> Dados meteorológicos e timezone
+	-> Transformações da aplicação
 	-> Estado da aplicação
 	-> Componentes React
-	-> Clima atual + previsão
 ```
 
-O serviço de geocoding localiza a cidade e fornece as coordenadas. Em seguida, o serviço de forecast consulta os dados meteorológicos. A página controla os estados de carregamento, erro e resultado e os componentes apresentam as informações.
+### Localização atual
+
+```text
+Usuário clica em "Usar minha localização"
+	-> Browser Geolocation API
+	-> Latitude e longitude
+	-> BigDataCloud Reverse Geocoding
+	-> CityResult normalizado
+	-> Open-Meteo Forecast API
+	-> Dados meteorológicos e timezone
+	-> Componentes React
+```
+
+Na previsão horária, o modelo mantém todos os horários retornados pela API. Quando o usuário abre os detalhes, a aplicação captura o momento atual, converte-o para o timezone da cidade e exibe o horário correspondente ao início da hora atual e os horários seguintes disponíveis.
+
+## Localização atual
+
+A localização atual não é solicitada automaticamente ao abrir a aplicação. O fluxo começa somente quando o usuário clica no botão correspondente e concede permissão ao navegador.
+
+O navegador fornece latitude e longitude por meio da Browser Geolocation API. Essas coordenadas são enviadas ao BigDataCloud para geocodificação reversa, que identifica a cidade, região e país. O resultado é normalizado para `CityResult` e reutiliza o mesmo fluxo de consulta meteorológica usado pela busca manual.
 
 ## APIs utilizadas
 
@@ -95,9 +133,19 @@ Documentação: [Geocoding API](https://open-meteo.com/en/docs/geocoding-api)
 
 ### Open-Meteo Forecast API
 
-Utilizada para obter os dados meteorológicos atuais e a previsão diária, incluindo códigos de condição e temperaturas máxima e mínima.
+Utilizada para obter os dados meteorológicos atuais e as previsões horária e diária, incluindo temperatura, umidade, vento, pressão atmosférica, códigos de condição, temperaturas máxima e mínima, precipitação e timezone da cidade consultada.
 
 Documentação: [Forecast API](https://open-meteo.com/en/docs)
+
+### Browser Geolocation API
+
+Utilizada no navegador somente após a ação e a permissão do usuário para obter latitude e longitude. A aplicação não solicita localização automaticamente ao abrir.
+
+### BigDataCloud Free Client-Side Reverse Geocoding
+
+Utilizada para identificar a cidade correspondente às coordenadas fornecidas pela Browser Geolocation API.
+
+Endpoint utilizado: `https://api.bigdatacloud.net/data/reverse-geocode-client`
 
 ## Deploy
 
@@ -132,14 +180,20 @@ Aplicação inicial de consulta meteorológica.
 
 Evolução da aplicação com previsão para os próximos dias, melhorias na experiência de busca, tratamento de estados e organização da comunicação com a API.
 
-### V2.2
+### Versão atual (MVP)
 
-Versão atual do projeto, com:
+O MVP atual inclui:
 
 - tratamento de erros e estados de carregamento;
 - previsão para 7 dias;
+- previsão horária com seleção de dias e timezone da cidade;
+- início da previsão horária no começo da hora atual;
+- localização atual com permissão do usuário e geocodificação reversa;
+- pressão atmosférica e precipitação diária;
 - responsividade;
 - melhorias de acessibilidade;
+- scroll suave até os detalhes da previsão horária;
+- scrollbars horizontais customizados;
 - centralização do mapeamento das condições meteorológicas;
 - identidade visual própria;
 - metadata e favicon personalizados;
@@ -152,10 +206,8 @@ As opções abaixo são planejadas e ainda não estão implementadas:
 - Testes automatizados.
 - GitHub Actions.
 - Melhorias de observabilidade.
-- Novas informações meteorológicas.
 - Favoritos ou persistência local.
 - Melhorias na seleção de cidades.
-- Uso da localização do navegador.
 
 ## Como executar o projeto
 

@@ -1,5 +1,5 @@
 'use client'
-import { Droplets, Wind } from 'lucide-react';
+import { CloudRain, Droplets, Gauge, Wind } from 'lucide-react';
 import { getWeatherCondition } from '../lib/weatherConditions';
 import { WeatherData } from '../types/weather';
 import WeatherIcon from './WeatherIcon';
@@ -52,6 +52,20 @@ export default function WeatherCard({clima}: WeatherCardProps) {
             Vento
           </span>
           <strong>{clima.current.wind_speed_10m} m/s</strong>
+        </p>
+        <p>
+          <span className="weather-detail-label">
+            <Gauge className="weather-detail-icon" size={16} aria-hidden="true" />
+            Pressão
+          </span>
+          <strong>{clima.current.pressure_msl} hPa</strong>
+        </p>
+        <p>
+          <span className="weather-detail-label">
+            <CloudRain className="weather-detail-icon" size={16} aria-hidden="true" />
+            Chuva hoje
+          </span>
+          <strong>{clima.daily.precipitation_sum[0]} mm</strong>
         </p>
       </div>
 

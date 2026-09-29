@@ -40,6 +40,8 @@ export interface WeatherCondition {
   color: string;
 }
 
+// Cada categoria mantém versões animada e estática para respeitar reduced motion
+// sem alterar a classificação meteorológica.
 const iconsByCategory: Record<
   WeatherConditionCategory,
   { icon: WeatherIconSource; staticIcon: WeatherIconSource }
@@ -70,6 +72,8 @@ function createWeatherCondition(
 }
 
 export function getWeatherCondition(code: number): WeatherCondition {
+  // Os grupos seguem os códigos meteorológicos da Open-Meteo e convertem vários
+  // códigos relacionados em uma categoria visual comum.
   switch (code) {
     case 0:
       return createWeatherCondition('clear', 'Céu limpo', 'var(--weather-sunny)');
@@ -124,6 +128,7 @@ export function getWeatherCondition(code: number): WeatherCondition {
       return createWeatherCondition('storm', 'Tempestade', 'var(--weather-storm)');
 
     default:
+      // Códigos novos ou inválidos continuam apresentáveis com uma condição neutra.
       return createWeatherCondition(
         'unknown',
         'Condição desconhecida',

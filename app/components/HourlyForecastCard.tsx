@@ -1,29 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type Ref } from 'react';
 import { getWeatherCondition } from '../lib/weatherConditions';
-import { selecionarPrevisaoPorDia } from '../lib/weatherTransform';
+import {
+  adicionarDiasNaData,
+  obterDataAtualNoTimezone,
+  selecionarPrevisaoPorDia,
+} from '../lib/weatherTransform';
 import type { HourlyWeather } from '../types/weather';
 import WeatherIcon from './WeatherIcon';
 
 interface HourlyForecastCardProps {
   hourly: HourlyWeather[];
+  sectionRef?: Ref<HTMLElement>;
+  timezone: string;
+  instanteAtual: Date;
 }
 
-function formatarDataISO(data: Date) {
-  const ano = data.getFullYear();
-  const mes = String(data.getMonth() + 1).padStart(2, '0');
-  const dia = String(data.getDate()).padStart(2, '0');
-
-  return `${ano}-${mes}-${dia}`;
-}
-
-function formatarNomeDoDia(data: string) {
-  const agora = new Date();
-  const dataHoje = formatarDataISO(agora);
-  const amanha = new Date(agora);
-  amanha.setDate(amanha.getDate() + 1);
-  const dataAmanha = formatarDataISO(amanha);
+function formatarNomeDoDia(
+  data: string,
+  timezone: string,
+  instanteAtual: Date
+) {
+  // Hoje e amanhã seguem o calendário da cidade consultada, não o timezone do navegador.
+  const dataHoje = obterDataAtualNoTimezone(instanteAtual, timezone);
+  const dataAmanha = adicionarDiasNaData(dataHoje, 1);
 
   if (data === dataHoje) {
     return 'Hoje';
@@ -33,9 +34,10 @@ function formatarNomeDoDia(data: string) {
     return 'Amanhã';
   }
 
-  const nomeDoDia = new Date(`${data}T12:00:00`).toLocaleDateString('pt-BR', {
+  const nomeDoDia = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'UTC',
     weekday: 'long',
-  });
+  }).format(new Date(`${data}T12:00:00Z`));
 
   return nomeDoDia.charAt(0).toUpperCase() + nomeDoDia.slice(1);
 }
@@ -44,7 +46,13 @@ function formatarDataNumerica(data: string) {
   return `${data.slice(8, 10)}/${data.slice(5, 7)}`;
 }
 
-export default function HourlyForecastCard({ hourly }: HourlyForecastCardProps) {
+export default function HourlyForecastCard({
+  hourly,
+  sectionRef,
+  timezone,
+  instanteAtual,
+}: HourlyForecastCardProps) {
+  // A lista já chega filtrada no momento da abertura; o primeiro horário define o dia inicial.
   const [dataSelecionada, setDataSelecionada] = useState(
     hourly[0]?.time.slice(0, 10) ?? ''
   );
@@ -62,7 +70,11 @@ export default function HourlyForecastCard({ hourly }: HourlyForecastCardProps) 
   }
 
   return (
-    <section className="hourly-forecast-card" aria-labelledby="hourly-forecast-card-title">
+    <section
+      ref={sectionRef}
+      className="hourly-forecast-card"
+      aria-labelledby="hourly-forecast-card-title"
+    >
       <header className="hourly-forecast-card-heading">
         <span className="forecast-card-label">Detalhes do dia</span>
         <h2 id="hourly-forecast-card-title">Previsão de hora em hora</h2>
@@ -75,10 +87,12 @@ export default function HourlyForecastCard({ hourly }: HourlyForecastCardProps) 
             type="button"
             key={data}
             aria-pressed={data === diaSelecionado}
-            aria-label={`Selecionar ${formatarNomeDoDia(data)}, ${formatarDataNumerica(data)}`}
+            aria-label={`Selecionar ${formatarNomeDoDia(data, timezone, instanteAtual)}, ${formatarDataNumerica(data)}`}
             onClick={() => setDataSelecionada(data)}
           >
-            <span className="hourly-date-label">{formatarNomeDoDia(data)}</span>
+            <span className="hourly-date-label">
+              {formatarNomeDoDia(data, timezone, instanteAtual)}
+            </span>
             <span className="hourly-date-value">{formatarDataNumerica(data)}</span>
           </button>
         ))}

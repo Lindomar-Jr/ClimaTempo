@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import SearchCity from './components/SearchCity';
 import { WeatherData } from './types/weather';
 import { CityResult } from './types/city';
@@ -11,8 +11,10 @@ import {
   buscarCidades,
   buscarClima as buscarClimaOpenMeteo,
 } from './lib/openMeteo';
+import { buscarCidadePorCoordenadas } from './lib/bigDataCloud';
 import {
   calcularCondicoesPredominantes,
+  filtrarPrevisaoHorariaFutura,
   transformarPrevisaoHoraria,
 } from './lib/weatherTransform';
 import CityResults from './components/CityResults';
@@ -32,6 +34,10 @@ export default function Home() {
       return `${mensagem}. Verifique o nome e tente novamente.`;
     }
 
+    if (mensagem === 'Não foi possível identificar a cidade da sua localização.') {
+      return mensagem;
+    }
+
     return `${mensagem}. Tente novamente em instantes.`;
   }
 
@@ -42,6 +48,26 @@ export default function Home() {
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [mostrarPrevisaoHoraria, setMostrarPrevisaoHoraria] = useState(false);
+  const [instanteAberturaPrevisao, setInstanteAberturaPrevisao] =
+    useState<Date | null>(null);
+  const previsaoHorariaRef = useRef<HTMLElement | null>(null);
+
+  // A seção só entra no DOM quando aberta; o efeito aguarda essa renderização
+  // para rolar até ela sem interferir no comportamento de fechamento.
+  useEffect(() => {
+    if (!mostrarPrevisaoHoraria) {
+      return;
+    }
+
+    const movimentoReduzido = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    previsaoHorariaRef.current?.scrollIntoView({
+      behavior: movimentoReduzido ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  }, [mostrarPrevisaoHoraria]);
 
   // Esta etapa apenas busca opções; a previsão só é solicitada após a escolha do usuário.
   async function pesquisarCidades(cidade: string) {
@@ -61,40 +87,115 @@ export default function Home() {
   }
 
 
-// A página orquestra a seleção da localização e a busca da previsão,
-// mantendo a comunicação com a API isolada no serviço.
+  // Busca manual e localização atual convergem aqui para montar WeatherData
+  // e transformar a previsão exatamente com as mesmas regras.
+  async function carregarClimaDaCidade(cidade: CityResult) {
+    const dadosClima = await buscarClimaOpenMeteo(
+      cidade.latitude,
+      cidade.longitude
+    );
+    const previsaoHoraria = transformarPrevisaoHoraria(dadosClima.hourly);
+    const codigosPredominantes = calcularCondicoesPredominantes(
+      previsaoHoraria,
+      dadosClima.daily.time,
+      dadosClima.daily.weather_code
+    );
+    const dadosCompletos: WeatherData = {
+      location: cidade,
+      current: dadosClima.current,
+      daily: {
+        ...dadosClima.daily,
+        predominant_weather_code: codigosPredominantes,
+      },
+      hourly: previsaoHoraria,
+      // O timezone acompanha a previsão porque os horários da API não têm offset.
+      timezone: dadosClima.timezone,
+      utc_offset_seconds: dadosClima.utc_offset_seconds,
+    };
+    setClima(dadosCompletos);
+  }
+
+  // O instante é capturado na abertura, e não na consulta do clima, para que
+  // a lista horária reflita o momento real em que o usuário pediu os detalhes.
+  function alternarPrevisaoHoraria() {
+    if (!mostrarPrevisaoHoraria) {
+      setInstanteAberturaPrevisao(new Date());
+    }
+
+    setMostrarPrevisaoHoraria((visivel) => !visivel);
+  }
+
+  // A página orquestra a seleção da localização e a busca da previsão,
+  // mantendo a comunicação com as APIs isolada nos serviços.
   async function selecionarCidade(cidade: CityResult) {
     setCidades([]);
     setErro(null);
     setCarregando(true);
 
     try {
-      const dadosClima = await buscarClimaOpenMeteo(
-        cidade.latitude,
-        cidade.longitude
-      );
-      const previsaoHoraria = transformarPrevisaoHoraria(dadosClima.hourly);
-      const codigosPredominantes = calcularCondicoesPredominantes(
-        previsaoHoraria,
-        dadosClima.daily.time,
-        dadosClima.daily.weather_code
-      );
-      const dadosCompletos: WeatherData = {
-        location: cidade,
-        current: dadosClima.current,
-        daily: {
-          ...dadosClima.daily,
-          predominant_weather_code: codigosPredominantes,
-        },
-        hourly: previsaoHoraria,
-      };
-      setClima(dadosCompletos);
+      await carregarClimaDaCidade(cidade);
     } catch (error) {
       setErro(formatarMensagemDeErro(error));
     } finally {
       setCarregando(false);
     }
-  };
+  }
+
+  // A localização precisa virar CityResult antes de reutilizar o fluxo de clima;
+  // assim, reverse geocoding e busca manual permanecem com o mesmo contrato.
+  async function usarLocalizacao() {
+    setErro(null);
+    setClima(null);
+    setCidades([]);
+    setCarregando(true);
+
+    try {
+      if (!navigator.geolocation) {
+        throw new Error(
+          'A localização não está disponível neste navegador. Tente novamente em outro navegador.'
+        );
+      }
+
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          // A permissão é solicitada somente por ação explícita do usuário.
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 0,
+          });
+        }
+      );
+
+      const cidade = await buscarCidadePorCoordenadas(
+        position.coords.latitude,
+        position.coords.longitude
+      );
+      await carregarClimaDaCidade(cidade);
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const codigo = (error as GeolocationPositionError).code;
+
+        if (codigo === 1) {
+          setErro(
+            'Permissão de localização negada. Habilite o acesso à localização nas configurações do navegador e tente novamente.'
+          );
+        } else if (codigo === 2) {
+          setErro(
+            'Não foi possível determinar sua localização no momento. Tente novamente.'
+          );
+        } else if (codigo === 3) {
+          setErro('A localização demorou mais que o esperado. Tente novamente.');
+        } else {
+          setErro(formatarMensagemDeErro(error));
+        }
+      } else {
+        setErro(formatarMensagemDeErro(error));
+      }
+    } finally {
+      setCarregando(false);
+    }
+  }
 
   return (
     <>
@@ -110,7 +211,11 @@ export default function Home() {
           <p>Consulte o clima da sua cidade:</p>
         </header>
 
-        <SearchCity aoBuscar={pesquisarCidades} />
+        <SearchCity
+          aoBuscar={pesquisarCidades}
+          aoUsarLocalizacao={usarLocalizacao}
+          carregando={carregando}
+        />
 
         {cidades.length > 0 && (
           <CityResults
@@ -129,14 +234,23 @@ export default function Home() {
             <button
               className="hourly-toggle-button"
               type="button"
-              onClick={() => setMostrarPrevisaoHoraria((visivel) => !visivel)}
+              onClick={alternarPrevisaoHoraria}
             >
               {mostrarPrevisaoHoraria
                 ? 'Ocultar previsão por hora'
                 : 'Mostrar previsão por hora'}
             </button>
-            {mostrarPrevisaoHoraria && (
-              <HourlyForecastCard hourly={clima.hourly} />
+            {mostrarPrevisaoHoraria && instanteAberturaPrevisao && (
+              <HourlyForecastCard
+                hourly={filtrarPrevisaoHorariaFutura(
+                  clima.hourly,
+                  instanteAberturaPrevisao,
+                  clima.timezone
+                )}
+                sectionRef={previsaoHorariaRef}
+                timezone={clima.timezone}
+                instanteAtual={instanteAberturaPrevisao}
+              />
             )}
           </>
         )}

@@ -1,14 +1,18 @@
-// Contrato compartilhado pelos dados atuais e pela previsão diária da Forecast API.
+// Contrato compartilhado pelos fluxos manual e de localização; timezone é necessário
+// porque os horários da Forecast API chegam sem offset.
 export interface WeatherForecast {
   current: {
     temperature_2m: number;
     relative_humidity_2m: number;
     weather_code: number;
     wind_speed_10m: number;
+    pressure_msl: number;
   };
   daily: DailyWeatherData;
   // Previsões individuais por hora, adaptadas ao modelo da aplicação.
   hourly: HourlyWeather[];
+  timezone: string;
+  utc_offset_seconds: number;
 }
 
 export interface DailyWeatherData {
@@ -22,6 +26,7 @@ export interface DailyWeatherData {
 
 // extends compõe a previsão e acrescenta a localização escolhida pelo usuário.
 export interface WeatherData extends WeatherForecast {
+  // CityResult é o contrato comum para cidades buscadas por nome e por coordenadas.
   location: {
     name: string;
     country: string;
@@ -51,9 +56,12 @@ export interface OpenMeteoForecastResponse {
     relative_humidity_2m: number;
     weather_code: number;
     wind_speed_10m: number;
+    pressure_msl: number;
   };
   daily: OpenMeteoDailyData;
   hourly: OpenMeteoHourlyData;
+  timezone: string;
+  utc_offset_seconds: number;
 }
 
 export interface OpenMeteoDailyData {

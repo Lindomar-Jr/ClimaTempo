@@ -16,7 +16,8 @@ function normalizarTexto(texto: string): string {
   return texto.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 }
 
-// A relevância pertence ao tratamento dos dados, não ao componente que apenas os apresenta.
+// A relevância pertence ao tratamento dos dados, não ao componente que apenas os apresenta;
+// resultados exatos e prefixos devem aparecer antes dos demais sem perder empates da API.
 export function ordenarCidadesPorRelevancia(
   textoPesquisado: string,
   cidades: CityResult[]
@@ -83,13 +84,15 @@ export async function buscarCidades(cidade: string): Promise<CityResult[]> {
       latitude: latitude.toString(),
       longitude: longitude.toString(),
       current:
-        'temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m',
+        'temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,pressure_msl',
       hourly: 'temperature_2m,weather_code,precipitation',
       daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum',
       timezone: 'auto',
       forecast_days: '7',
     });
 
+      // timezone=auto faz hourly.time representar o horário local da cidade; os metadados
+      // de timezone são preservados abaixo para comparações temporais posteriores.
     const respostaClima = await fetch(
       `https://api.open-meteo.com/v1/forecast?${parametros}`
     );
@@ -104,5 +107,8 @@ export async function buscarCidades(cidade: string): Promise<CityResult[]> {
       current: dadosClima.current,
       daily: dadosClima.daily,
       hourly: dadosClima.hourly,
+      // hourly.time não possui offset; timezone e utc_offset_seconds mantêm o contexto da API.
+      timezone: dadosClima.timezone,
+      utc_offset_seconds: dadosClima.utc_offset_seconds,
   };
 }
