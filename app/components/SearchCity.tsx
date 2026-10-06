@@ -42,17 +42,33 @@ export default function SearchCity({
       onChange={(e) => setCidade(e.target.value)}
       placeholder="Digite uma cidade…" />
 
-      <button type="submit">Buscar</button>
-    </form>
-
-    <button
+      <button
       className="location-button"
       type="button"
       onClick={aoUsarLocalizacao}
       disabled={carregando}
-    >
-      Usar minha localização
-    </button>
+      aria-label="Usar minha localização"
+      title="Usar minha localização"
+      >
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
+          <circle cx="12" cy="10" r="2.5" />
+        </svg>
+      </button>
+
+      <button type="submit">Buscar</button>
+    </form>
+
     </>
   );
 }
